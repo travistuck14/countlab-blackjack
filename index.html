@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07150f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CountLab">
+<meta name="format-detection" content="telephone=no">
+<title>CountLab — Blackjack Table</title>
+<style>
+:root{color-scheme:dark;--felt:#075234;--gold:#e8c46a;--ink:#f4f1e8;--panel:#101a19;--line:#355747;--muted:#b5c8bc}
+*{box-sizing:border-box}
+body{margin:0;background:#080d0d;color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.app{max-width:1100px;margin:auto;padding:14px}
+.head{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.logo{background:var(--gold);color:#17150e;border-radius:12px;padding:8px 12px;font-size:23px;font-weight:900}
+.head h1{font-size:20px;margin:0}.head p{margin:0;color:var(--muted);font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 255px;gap:12px}
+.table{min-height:570px;border:10px solid #33251b;border-radius:42px;background:radial-gradient(ellipse at 50% 45%,#087247 0,#075c3a 48%,#03432b 100%);box-shadow:inset 0 0 0 2px #b08b4b,0 12px 35px #0008;padding:22px 18px 16px;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden}
+.table:before{content:"";position:absolute;inset:11px;border:1px solid #7ca78a66;border-radius:32px;pointer-events:none}
+.feltlabel{font-family:Georgia,serif;letter-spacing:.15em;color:#c6e0ce99;font-size:12px;margin:2px 0 12px;text-align:center}
+.seat{width:100%;display:flex;flex-direction:column;align-items:center;min-height:145px;z-index:1}
+.seatname{font-size:13px;color:#d7e8dc;margin-bottom:6px}
+.hand{display:flex;gap:7px;justify-content:center;min-height:94px;align-items:center;flex-wrap:wrap}
+.total{font-size:14px;font-weight:700;background:#092a20;border:1px solid #4a8067;border-radius:9px;padding:4px 10px;margin-top:5px;min-height:28px}
+.card{height:91px;width:64px;border-radius:8px;background:#f9f8f1;color:#1b2020;box-shadow:0 4px 10px #001b11aa;position:relative;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-weight:bold;font-size:27px;border:1px solid #ddd}
+.card.red{color:#c8323b}.card.back{background:repeating-linear-gradient(45deg,#9b1f2b,#9b1f2b 4px,#f2d4cf 4px,#f2d4cf 6px);border:5px solid #f7f1e9;color:transparent}
+.corner{position:absolute;top:4px;left:6px;font-size:13px;line-height:1.05}.corner.bottom{top:auto;left:auto;right:6px;bottom:4px;transform:rotate(180deg)}
+.betchip{border:3px dashed #eee;border-radius:50%;width:42px;height:42px;display:grid;place-items:center;font-size:12px;font-weight:800;background:#2179a0;box-shadow:0 3px 7px #001b11;margin:3px}
+.betarea{z-index:1;display:flex;flex-direction:column;align-items:center;min-height:68px;margin:0 0 4px}
+.controls,.chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;z-index:2}
+.controls{margin-top:auto}
+.btn,.chip{border:1px solid #6e8879;background:#15241f;color:#fff;border-radius:10px;padding:10px 14px;font-weight:750;font-size:13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.chip{border:3px dashed #e8e8e8;border-radius:50%;width:47px;height:47px;padding:0;display:grid;place-items:center;box-shadow:0 3px 7px #001b11aa}
+.c1{background:#d8d8d8;color:#202020}.c5{background:#b72f35}.c25{background:#16895b}.c100{background:#242b31}.c500{background:#803c83}.c1000{background:#d4a32c;color:#1a160c}
+.green{background:#217a4a}.blue{background:#245b91}.red{background:#8c3033}.gold{background:#c49a37;color:#18150c;border-color:#e6c46a}
+.btn:disabled,.chip:disabled{opacity:.35;cursor:not-allowed}
+.msg{min-height:34px;font-size:12px;text-align:center;color:#ffedb4;margin:8px 0 0;z-index:1}
+.status{font-size:12px;color:#d4e6d9;text-align:center;z-index:1;margin:3px 0 5px}
+.side{display:flex;flex-direction:column;gap:10px}
+.panel{border:1px solid var(--line);border-radius:13px;padding:13px;background:var(--panel)}
+.panel h2{margin:0 0 8px;font-size:11px;letter-spacing:.1em;color:#b9cabe}
+.big{font-size:25px;font-weight:850;color:#f4e2a6}
+.kv{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin:5px 0;color:#d0ded5}.kv b{color:#fff}
+.small{font-size:11px;color:var(--muted);line-height:1.45}
+.toggle{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);margin-top:8px}
+.rules{font-size:11px;color:var(--muted);line-height:1.5}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.table{min-height:550px}}
+@media(max-width:520px){
+  html{min-height:100%;-webkit-text-size-adjust:100%}
+  body{min-height:100%;overscroll-behavior-y:contain}
+  .app{padding:calc(8px + env(safe-area-inset-top)) 8px calc(12px + env(safe-area-inset-bottom));max-width:560px}
+  .head{gap:9px;margin:0 2px 9px}.logo{font-size:20px;padding:7px 10px;border-radius:10px}
+  .head h1{font-size:17px}.head p{font-size:11px}
+  .layout{display:flex;flex-direction:column;gap:10px}
+  .table{width:100%;min-height:0;border-width:7px;border-radius:24px;padding:13px 7px 12px;overflow:visible}
+  .table:before{inset:7px;border-radius:17px}
+  .feltlabel{font-size:9px;letter-spacing:.09em;margin:1px 0 8px}
+  .seat{min-height:105px}.seatname{font-size:11px;margin-bottom:4px}
+  .hand{min-height:73px;gap:5px}.card{height:70px;width:49px;border-radius:7px;font-size:21px}
+  .corner{font-size:11px;top:3px;left:4px}.corner.bottom{right:4px;bottom:3px}
+  .total{font-size:12px;padding:3px 8px;min-height:24px;margin-top:3px}
+  .betarea{min-height:54px;margin:0 0 2px}.betchip{width:38px;height:38px;font-size:11px;margin:1px}
+  .status{font-size:11px;margin:3px 0 5px;min-height:28px}
+  .controls{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}
+  .btn{min-height:44px;padding:9px 5px;font-size:12px;border-radius:9px}
+  .chips{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}
+  .chip{width:48px;height:48px;justify-self:center;font-size:11px}
+  #clear{grid-column:1/-1;width:100%;min-height:40px}
+  .msg{font-size:11px;min-height:28px;margin-top:6px}
+  .side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .panel{padding:10px;border-radius:11px;min-width:0}.panel h2{font-size:10px}
+  .big{font-size:21px}.kv{font-size:11px;gap:5px}.small,.rules,.toggle{font-size:10px}
+  .toggle input{width:18px;height:18px}
+}
+@media(max-width:360px){
+  .controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{width:43px;height:64px}.hand{gap:3px}
+  .side{grid-template-columns:1fr}
+}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<script>
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
+</script>
+</head>
+<body>
+<main class="app">
+<header class="head"><div class="logo">♠</div><div><h1>CountLab Blackjack</h1><p>Practice table · six-deck shoe · Hi-Lo count · Safari supported</p></div></header>
+<div class="layout">
+<section class="table" aria-label="Blackjack table">
+<div class="feltlabel">BLACKJACK PAYS 3:2 · DEALER STANDS ON SOFT 17</div>
+<div class="seat"><div class="seatname">DEALER</div><div class="hand" id="dealerHand"></div><div class="total" id="dealerTotal"></div></div>
+<div class="betarea"><div class="seatname">YOUR BET</div><div class="betchip" id="betChip">$0</div></div>
+<div class="seat"><div class="seatname">PLAYER</div><div class="hand" id="playerHand"></div><div class="total" id="playerTotal"></div></div>
+<div class="status" id="roundStatus">Tap a chip to set your bet, then deal.</div>
+<div class="controls">
+<button class="btn green" id="hit" type="button" disabled>Hit</button>
+<button class="btn" id="stand" type="button" disabled>Stand</button>
+<button class="btn blue" id="double" type="button" disabled>Double</button>
+<button class="btn gold" id="deal" type="button" disabled>Deal</button>
+</div>
+<div class="chips" aria-label="Bet chips">
+<button class="chip c1" type="button" data-chip="1">+$1</button>
+<button class="chip c5" type="button" data-chip="5">+$5</button>
+<button class="chip c25" type="button" data-chip="25">+$25</button>
+<button class="chip c100" type="button" data-chip="100">+$100</button>
+<button class="chip c500" type="button" data-chip="500">+$500</button>
+<button class="chip c1000" type="button" data-chip="1000">+$1k</button>
+<button class="btn" id="clear" type="button">Clear bet</button>
+</div>
+<div class="msg" id="message" aria-live="polite">Tap a chip. Your bet will update immediately.</div>
+</section>
+<aside class="side">
+<div class="panel"><h2>TABLE BANKROLL</h2><div class="big" id="bankroll">$1,000</div><div class="kv"><span>Current bet</span><b id="betText">$0</b></div><div class="kv"><span>Round result</span><b id="lastResult">—</b></div><button class="btn" id="reset" type="button" style="width:100%;margin-top:7px">Reset bankroll & shoe</button></div>
+<div class="panel"><h2>SHOE INFO</h2><div class="kv"><span>Decks</span><b>6</b></div><div class="kv"><span>Cards remaining</span><b id="remaining">312</b></div><div class="kv"><span>Penetration</span><b id="penetration">0%</b></div><div class="small">A fresh six-deck shoe is shuffled when fewer than 20 cards remain.</div></div>
+<div class="panel"><h2>HI-LO COUNT</h2><div class="kv"><span>Running count</span><b class="big" id="rc">0</b></div><div class="kv"><span>Decks remaining</span><b id="decksLeft">6.0</b></div><div class="kv"><span>True count</span><b id="tc">+0.0</b></div><label class="toggle"><input type="checkbox" id="showCount" checked> Show count (turn off to quiz yourself)</label></div>
+<div class="panel"><h2>QUICK REFERENCE</h2><div class="kv"><span>2–6</span><b style="color:#62d69d">+1</b></div><div class="kv"><span>7–9</span><b>0</b></div><div class="kv"><span>10–A</span><b style="color:#ff8585">−1</b></div><p class="rules">Practice game only. No real money or casino connection. Hi-Lo counts are educational and do not guarantee an advantage.</p></div>
+</aside>
+</div>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const suits = ["♠","♥","♦","♣"];
+const ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+let shoe = [];
+let bankroll = 1000;
+let bet = 0;             // Uncommitted bet while selecting chips; active wager during a hand.
+let player = [];
+let dealer = [];
+let active = false;
+let hiddenDealer = false;
+let rc = 0;
+let result = "—";
+const fmt = n => "$" + n.toLocaleString("en-US",{maximumFractionDigits:2});
+function countTag(card){return ["2","3","4","5","6"].includes(card.r)?1:["7","8","9"].includes(card.r)?0:-1}
+function update(){
+  $("bankroll").textContent = fmt(bankroll);
+  $("betText").textContent = fmt(bet);
+  $("betChip").textContent = fmt(bet);
+  $("lastResult").textContent = result;
+  $("dealerHand").innerHTML = dealer.map((c,i)=>renderCard(c,hiddenDealer&&i===1)).join("");
+  $("playerHand").innerHTML = player.map(c=>renderCard(c)).join("");
+  $("dealerTotal").textContent = dealer.length ? (hiddenDealer ? "" : "Total: "+handTotal(dealer).t) : "";
+  $("playerTotal").textContent = player.length ? "Total: "+handTotal(player).t : "";
+  $("remaining").textContent = shoe.length;
+  $("penetration").textContent = Math.round((312-shoe.length)/312*100)+"%";
+  const decks = Math.max(shoe.length/52,.25);
+  $("decksLeft").textContent = decks.toFixed(1);
+  const trueCount = rc/decks;
+  $("rc").textContent = $("showCount").checked ? (rc>0?"+"+rc:String(rc)) : "••";
+  $("tc").textContent = $("showCount").checked ? (trueCount>=0?"+":"")+trueCount.toFixed(1) : "••";
+  $("deal").disabled = active || bet <= 0 || bet > bankroll;
+  $("hit").disabled = !active;
+  $("stand").disabled = !active;
+  $("double").disabled = !active || player.length !== 2 || bankroll < bet;
+  $("clear").disabled = active || bet === 0;
+  document.querySelectorAll("[data-chip]").forEach(button=>{
+    const amount = Number(button.dataset.chip);
+    button.disabled = active || amount > bankroll-bet;
+  });
+}
+function message(text){$("message").textContent=text}
+function makeShoe(){
+  shoe=[];
+  for(let d=0;d<6;d++) for(const suit of suits) for(const rank of ranks) shoe.push({r:rank,s:suit});
+  for(let i=shoe.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shoe[i],shoe[j]]=[shoe[j],shoe[i]]}
+  rc=0;
+  update();
+}
+function draw(){
+  if(shoe.length<20) makeShoe();
+  const c=shoe.pop();
+  rc+=countTag(c);
+  return c;
+}
+function cardValue(c){return ["J","Q","K"].includes(c.r)?10:c.r==="A"?11:Number(c.r)}
+function handTotal(hand){
+  let total=hand.reduce((sum,c)=>sum+cardValue(c),0);
+  let aces=hand.filter(c=>c.r==="A").length;
+  while(total>21&&aces>0){total-=10;aces--}
+  const soft=hand.some(c=>c.r==="A")&&hand.reduce((sum,c)=>sum+cardValue(c),0)===total;
+  return {t:total,soft};
+}
+function renderCard(c,back=false){
+  if(back)return '<div class="card back"></div>';
+  const red=["♥","♦"].includes(c.s);
+  return `<div class="card ${red?"red":""}"><span class="corner">${c.r}<br>${c.s}</span>${c.s}<span class="corner bottom">${c.r}<br>${c.s}</span></div>`;
+}
+function placeChip(amount){
+  if(active){message("Finish this hand before placing another bet.");return}
+  if(!Number.isFinite(amount)||amount<=0){message("Invalid chip amount.");return}
+  if(amount>bankroll-bet){message("That chip is larger than your available bankroll.");return}
+  bet += amount;
+  result="—";
+  message(fmt(amount)+" added. Current bet: "+fmt(bet)+".");
+  update();
+}
+window.placeChip=placeChip;
+document.querySelectorAll("[data-chip]").forEach(button=>{
+  button.addEventListener("click",()=>placeChip(Number(button.dataset.chip)));
+});
+function finish(outcome,payout){
+  active=false;
+  hiddenDealer=false;
+  bankroll+=payout;
+  result=outcome;
+  bet=0;
+  $("roundStatus").textContent="Round complete · place a new bet to deal again.";
+  message(outcome);
+  update();
+}
+function dealerPlay(){
+  hiddenDealer=false;
+  update();
+  while(handTotal(dealer).t<17){dealer.push(draw())}
+  const p=handTotal(player).t, d=handTotal(dealer).t;
+  if(d>21) finish("Dealer busts — you win "+fmt(bet*2),bet*2);
+  else if(p>d) finish("You win "+fmt(bet*2),bet*2);
+  else if(p===d) finish("Push — your bet is returned",bet);
+  else finish("Dealer wins",0);
+}
+function dealHand(){
+  if(active){message("Finish the current hand first.");return}
+  if(!Number.isFinite(bet)||bet<=0){message("Tap a chip to place a bet before dealing.");return}
+  if(bet>bankroll){message("Your bet is larger than your bankroll.");return}
+  bankroll-=bet;
+  player=[];dealer=[];
+  active=true;
+  hiddenDealer=true;
+  player.push(draw());dealer.push(draw());player.push(draw());dealer.push(draw());
+  $("roundStatus").textContent="Your turn";
+  if(handTotal(player).t===21){
+    hiddenDealer=false;
+    if(handTotal(dealer).t===21) finish("Push — both have blackjack",bet);
+    else finish("Blackjack! Paid 3:2",bet*2.5);
+  }else{
+    message("Choose Hit, Stand, or Double.");
+    update();
+  }
+}
+$("deal").addEventListener("click",dealHand);
+$("clear").addEventListener("click",()=>{
+  if(!active){bet=0;message("Bet cleared.");update()}
+});
+$("hit").addEventListener("click",()=>{
+  if(!active)return;
+  player.push(draw());
+  if(handTotal(player).t>21)finish("Bust — dealer wins",0);
+  else {message("You have "+handTotal(player).t+".");update()}
+});
+$("stand").addEventListener("click",()=>{
+  if(active){$("roundStatus").textContent="Dealer turn";dealerPlay()}
+});
+$("double").addEventListener("click",()=>{
+  if(!active||player.length!==2||bankroll<bet)return;
+  bankroll-=bet;
+  bet*=2;
+  player.push(draw());
+  if(handTotal(player).t>21)finish("Bust after double",0);
+  else dealerPlay();
+});
+$("reset").addEventListener("click",()=>{
+  bankroll=1000;bet=0;player=[];dealer=[];active=false;hiddenDealer=false;result="—";
+  $("roundStatus").textContent="Tap a chip to set your bet, then deal.";
+  message("Bankroll and shoe reset.");
+  makeShoe();
+});
+$("showCount").addEventListener("change",update);
+makeShoe();
+update();
+</script>
+</body>
+</html>

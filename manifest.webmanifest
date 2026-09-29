@@ -1,0 +1,14 @@
+{
+  "name": "CountLab Blackjack",
+  "short_name": "CountLab",
+  "description": "Offline blackjack and Hi-Lo card-counting practice game",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#080d0d",
+  "theme_color": "#07150f",
+  "orientation": "portrait",
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ]
+}
